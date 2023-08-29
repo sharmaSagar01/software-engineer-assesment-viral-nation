@@ -1,0 +1,25 @@
+model User {
+  id       Int      @id @default(autoincrement())
+  userName String
+  email    String   @unique
+  password String
+  movies MovieUser[]
+}
+
+model Movie {
+  id           Int      @id @default(autoincrement())
+  movieName    String
+  description  String
+  directorName String
+  releaseDate  String
+  users MovieUser[]
+}
+
+model MovieUser {
+  id       Int    @id @default(autoincrement())
+  userId   Int
+  movieId  Int
+  user     User   @relation(fields: [userId], references: [id])
+  movie    Movie  @relation(fields: [movieId], references: [id])
+  @@unique([userId, movieId])
+}
