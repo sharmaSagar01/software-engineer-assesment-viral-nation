@@ -3,6 +3,8 @@ type User {
   userName: String!
   email: String!
   password: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type Movie {
@@ -11,6 +13,8 @@ type Movie {
   description: String
   directorName: String!
   releaseDate: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type Query {
