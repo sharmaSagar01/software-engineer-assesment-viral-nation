@@ -1,6 +1,7 @@
 const { hash, compare } = require("bcryptjs");
 
-const SALT = parseInt(process.env.SALT) || 10;
+// const SALT = parseInt(process.env.SALT) || 10;
+const SALT = 10;
 
 export const compareHash = async (password: string, hashed: string) =>
   await compare(password, hashed);
