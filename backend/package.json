@@ -1,7 +1,6 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -22,5 +21,6 @@
     "graphql": "^16.8.0",
     "prisma": "^5.2.0",
     "typescript": "^5.2.2"
-  }
+  },
+  "description": ""
 }
