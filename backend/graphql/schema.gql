@@ -20,7 +20,9 @@ type Query {
 }
 type Mutation {
   createUser(userName: String!, email: String!, password: String!): User
+
   loginUser(email: String!, password: String!): User
+
   logoutUser: Boolean
 
   createMovie(
@@ -37,5 +39,6 @@ type Mutation {
     directorName: String
     releaseDate: String
   ): Movie
+
   deleteMovie(id: Int!): Boolean
 }
