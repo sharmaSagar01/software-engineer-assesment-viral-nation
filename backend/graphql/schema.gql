@@ -1,0 +1,48 @@
+type User {
+  id: Int!
+  userName: String!
+  email: String!
+  password: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Movie {
+  id: Int!
+  movieName: String!
+  description: String
+  directorName: String!
+  releaseDate: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Query {
+  getUserById(id: Int!): User
+  getMovieById(id: Int): Movie
+  getMovies(limit: Int = 10, offset: Int = 0): [Movie!]!
+}
+type Mutation {
+  createUser(userName: String!, email: String!, password: String!): User
+
+  loginUser(email: String!, password: String!): User
+
+  logoutUser: Boolean
+
+  createMovie(
+    movieName: String!
+    description: String
+    directorName: String!
+    releaseDate: String!
+  ): Movie
+
+  updateMovie(
+    id: Int!
+    movieName: String
+    description: String
+    directorName: String
+    releaseDate: String
+  ): Movie
+
+  deleteMovie(id: Int!): Boolean
+}

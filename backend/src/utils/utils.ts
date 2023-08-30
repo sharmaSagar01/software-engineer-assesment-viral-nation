@@ -1,4 +1,4 @@
-const { hash, compare } = require("bcryptjs");
+import { hash, compare } from 'bcryptjs';
 
 // const SALT = parseInt(process.env.SALT) || 10;
 const SALT = 10;
