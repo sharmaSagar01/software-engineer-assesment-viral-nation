@@ -5,7 +5,7 @@
   "scripts": {
     "db:migrate": "prisma migrate dev",
     "db:genrate": "prisma genrate",
-    "dev": "tsc && nodemon dist/server.js"
+    "dev": "tsc && nodemon --watch src,schema dist/server.js"
   },
   "keywords": [],
   "author": "",

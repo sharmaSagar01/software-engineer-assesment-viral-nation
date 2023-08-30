@@ -3,10 +3,9 @@ scalar DateTime
 type User {
   id: Int!
   userName: String!
-  email: String! 
-  password: String!
+  email: String!
   createdAt: DateTime!
-  updatedAt: DateTime!
+  updatedAt: DateTime!https://studio.apollographql.com/sandbox?endpoint=http%3A%2F%2Flocalhost%3A4000%2F
 }
 
 type Movie {
@@ -20,16 +19,20 @@ type Movie {
 }
 
 type Query {
-  user(id: Int!): UserResponse
+  user(id: Int!): User
   movie(id: Int!): Movie
-  getMovies(limit: Int = 10, offset: Int = 0): [Movie!]!
+  movies(limit: Int = 10, offset: Int = 0): [Movie!]!
 }
 type Mutation {
-  createUser(userName: String!, email: String!, password: String!): User
+  register(
+    userName: String!
+    email: String! @constraint(format: "email")
+    password: String!
+  ): User
 
-  loginUser(email: String!, password: String!): User
+  login(email: String!, password: String!): User
 
-  logoutUser: Boolean
+  changePassword(oldPassword: String!, password: String!): User
 
   createMovie(
     movieName: String!
@@ -51,12 +54,4 @@ type Mutation {
 
 type Login {
   accessToken: String!
-}
-
-type UserResponse {
-  id: Int!
-  userName: String!
-  email: String! @constant(format: "email")
-  createdAt: DateTime!
-  updatedAt: DateTime!
 }

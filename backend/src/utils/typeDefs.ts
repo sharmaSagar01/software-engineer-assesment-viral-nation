@@ -1,6 +1,4 @@
-const { makeExecutableSchema } = require('@graphql-tools/schema');
-
-const fs = require('fs');
+import fs from 'fs';
 
 export const typeDefs = fs
   .readFileSync('./graphql/schema.gql')

@@ -1,7 +1,8 @@
-const {
+import {
   constraintDirective,
   constraintDirectiveTypeDefs,
-} = require('graphql-constraint-directive');
+} from 'graphql-constraint-directive';
+
 import { ApolloError, ApolloServer } from 'apollo-server';
 import resolvers from './utils/resolver';
 import createContext from './utils/context';

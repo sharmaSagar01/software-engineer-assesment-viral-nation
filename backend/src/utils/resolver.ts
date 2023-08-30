@@ -10,7 +10,6 @@ const resolvers = {
   DateTime: DateTime,
   Query: {
     user: async (_, { id }: Id, { prisma }: Context) => {
-      console.log(id);
       return await prisma.user.findUniqueOrThrow({
         where: {
           id,
@@ -26,7 +25,7 @@ const resolvers = {
       });
     },
 
-    getMovies: async (
+    movies: async (
       _,
       { limit: take, offset: skip }: { limit: number; offset: number },
       { prisma }: Context
@@ -39,7 +38,7 @@ const resolvers = {
   },
 
   Mutation: {
-    createUser: async (
+    register: async (
       _,
       data: {
         userName: string;
@@ -48,15 +47,13 @@ const resolvers = {
       },
       { prisma }: Context
     ) => {
-      console.log(data.password);
       data.password = await hashData(data.password);
-      console.log(data.password);
       return await prisma.user.create({
         data,
       });
     },
 
-    loginUser: async (
+    login: async (
       _,
       { email, password }: { email: string; password: string },
       { prisma }: Context
@@ -68,20 +65,42 @@ const resolvers = {
       });
 
       if (!user) {
-        throw new Error(`User not found`);
+        throw new Error(`email or password not matching`);
       }
-      const passwordMatches = compareHash(password, user.password);
+      const passwordMatches = await compareHash(password, user.password);
 
       if (!passwordMatches) {
-        throw new Error(`Invalid Password`);
+        throw new Error(`email or password not matching`);
       }
       return user;
     },
+    changePassword: async (
+      _,
+      { oldPassword, password }: { oldPassword: string; password: string },
+      { prisma }: Context
+    ) => {
+      const user = await prisma.user.findUnique({
+        where: {
+          email: '',
+        },
+      });
 
-    logoutUser: async () => {
-      //perform logout actions
+      if (!user) {
+        throw new Error(`email or password not matching`);
+      }
+      const passwordMatches = await compareHash(oldPassword, user.password);
+
+      if (!passwordMatches) {
+        throw new Error(`password not matching`);
+      }
+      user.password = await hashData(password);
+      return await prisma.user.update({
+        data: user,
+        where: {
+          email: user.email,
+        },
+      });
     },
-
     createMovie: async (
       _,
       data: {
