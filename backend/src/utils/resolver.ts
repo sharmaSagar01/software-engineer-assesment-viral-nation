@@ -1,59 +1,76 @@
-import { PrismaClient } from '@prisma/client';
+import { DateTime } from './scalar';
+import { Context } from './context';
+import { compareHash, hashData } from './utils';
 
-const prisma = new PrismaClient();
+interface Id {
+  id: number;
+}
 
 const resolvers = {
+  DateTime: DateTime,
   Query: {
-    getUserById: async (args: { id: number }) => {
-      return await prisma.user.findUnique({
+    user: async (_, { id }: Id, { prisma }: Context) => {
+      console.log(id);
+      return await prisma.user.findUniqueOrThrow({
         where: {
-          id: args.id || undefined,
+          id,
         },
       });
     },
 
-    getMovieById: async (args: { id: number }) => {
-      return await prisma.movie.findUnique({
+    movie: async (_, { id }: Id, { prisma }: Context) => {
+      return await prisma.movie.findUniqueOrThrow({
         where: {
-          id: args.id || undefined,
+          id,
         },
       });
     },
 
-    getMovies: async (args: { limit: number; offset: number }) => {
+    getMovies: async (
+      _,
+      { limit: take, offset: skip }: { limit: number; offset: number },
+      { prisma }: Context
+    ) => {
       return await prisma.movie.findMany({
-        take: args.limit,
-        skip: args.offset,
+        take,
+        skip,
       });
     },
   },
 
   Mutation: {
-    createUser: async (args: {
-      userName: string;
-      email: string;
-      password: string;
-    }) => {
+    createUser: async (
+      _,
+      data: {
+        userName: string;
+        email: string;
+        password: string;
+      },
+      { prisma }: Context
+    ) => {
+      console.log(data.password);
+      data.password = await hashData(data.password);
+      console.log(data.password);
       return await prisma.user.create({
-        data: {
-          userName: args.userName,
-          email: args.email,
-          password: args.password,
-        },
+        data,
       });
     },
 
-    loginUser: async (args: { email: string; password: string }) => {
+    loginUser: async (
+      _,
+      { email, password }: { email: string; password: string },
+      { prisma }: Context
+    ) => {
       const user = await prisma.user.findUnique({
         where: {
-          email: args.email,
+          email,
         },
       });
 
       if (!user) {
         throw new Error(`User not found`);
       }
-      const passwordMatches = ''; // Compare password using your hasing function
+      const passwordMatches = compareHash(password, user.password);
 
       if (!passwordMatches) {
         throw new Error(`Invalid Password`);
@@ -65,43 +82,44 @@ const resolvers = {
       //perform logout actions
     },
 
-    createMovie: async (args: {
-      movieName: string;
-      description: string;
-      directorName: string;
-      releaseDate: string;
-    }) => {
+    createMovie: async (
+      _,
+      data: {
+        movieName: string;
+        description: string;
+        directorName: string;
+        releaseDate: string;
+      },
+      { prisma }: Context
+    ) => {
       return await prisma.movie.create({
-        data: {
-          movieName: args.movieName,
-          description: args.description,
-          directorName: args.directorName,
-          releaseDate: args.releaseDate,
-        },
+        data,
       });
     },
 
-    updateMovie: async (args: {
-      id: number;
-      movieName: string;
-      description: string;
-      directorName: string;
-      releaseDate: string;
-    }) => {
+    updateMovie: async (
+      _,
+      {
+        id,
+        ...data
+      }: {
+        id: number;
+        movieName: string;
+        description: string;
+        directorName: string;
+        releaseDate: string;
+      },
+      { prisma }: Context
+    ) => {
       return await prisma.movie.update({
         where: {
-          id: args.id,
+          id,
         },
-        data: {
-          movieName: args.movieName,
-          description: args.description,
-          directorName: args.directorName,
-          releaseDate: args.releaseDate,
-        },
+        data,
       });
     },
 
-    deleteMovie: async (args: { id: number }) => {
+    deleteMovie: async (_, args: Id, { prisma }: Context) => {
       await prisma.movie.delete({ where: { id: args.id } });
       return true;
     },

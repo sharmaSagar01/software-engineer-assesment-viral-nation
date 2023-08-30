@@ -1,7 +1,9 @@
+scalar DateTime
+
 type User {
   id: Int!
   userName: String!
-  email: String!
+  email: String! 
   password: String!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -18,8 +20,8 @@ type Movie {
 }
 
 type Query {
-  getUserById(id: Int!): User
-  getMovieById(id: Int): Movie
+  user(id: Int!): UserResponse
+  movie(id: Int!): Movie
   getMovies(limit: Int = 10, offset: Int = 0): [Movie!]!
 }
 type Mutation {
@@ -45,4 +47,16 @@ type Mutation {
   ): Movie
 
   deleteMovie(id: Int!): Boolean
+}
+
+type Login {
+  accessToken: String!
+}
+
+type UserResponse {
+  id: Int!
+  userName: String!
+  email: String! @constant(format: "email")
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
