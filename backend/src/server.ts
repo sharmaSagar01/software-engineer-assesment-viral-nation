@@ -2,11 +2,12 @@ import {
   constraintDirective,
   constraintDirectiveTypeDefs,
 } from 'graphql-constraint-directive';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 import { ApolloError, ApolloServer } from 'apollo-server';
+
 import resolvers from './utils/resolver';
 import createContext from './utils/context';
 import { typeDefs } from './utils/typeDefs';
-import { makeExecutableSchema } from '@graphql-tools/schema';
 
 let schema = makeExecutableSchema({
   typeDefs: [constraintDirectiveTypeDefs, typeDefs],

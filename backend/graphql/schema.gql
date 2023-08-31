@@ -47,7 +47,7 @@ type Mutation {
     title: String!
     description: String
     directorName: String!
-    releaseDate: String!
+    releaseDate: DateTime!
   ): Movie
 
   updateMovie(
@@ -55,7 +55,7 @@ type Mutation {
     title: String
     description: String
     directorName: String
-    releaseDate: String
+    releaseDate: DateTime
   ): Movie
 
   deleteMovie(id: Int!): Boolean
