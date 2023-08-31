@@ -1,20 +1,47 @@
 import { DateTime } from './scalar';
 import { Context } from './context';
-import { compareHash, hashData } from './utils';
+import { compareHash, hashData, createAccessToken } from './utils';
+import { GraphQLError } from 'graphql';
+import { UserInputError } from 'apollo-server-express';
 
 interface Id {
   id: number;
 }
 
+interface Query {
+  limit: number;
+  offset: number;
+  contains?: string;
+  releaseDate?: {
+    lte?: Date;
+    gte?: Date;
+  };
+  orderBy?: string;
+  sortOrder: string;
+}
+
 const resolvers = {
   DateTime: DateTime,
+
   Query: {
-    user: async (_, { id }: Id, { prisma }: Context) => {
-      return await prisma.user.findUniqueOrThrow({
+    profile: async (_, __, { prisma, userId }: Context) => {
+      const user = await prisma.user.findUniqueOrThrow({
         where: {
-          id,
+          id: userId,
         },
       });
+
+      if (!user) {
+        throw new GraphQLError(
+          'You are not authorized to perform this action.',
+          {
+            extensions: {
+              code: 'FORBIDDEN',
+            },
+          }
+        );
+      }
+      return user;
     },
 
     movie: async (_, { id }: Id, { prisma }: Context) => {
@@ -27,12 +54,31 @@ const resolvers = {
 
     movies: async (
       _,
-      { limit: take, offset: skip }: { limit: number; offset: number },
+      {
+        limit: take,
+        offset: skip,
+        contains,
+        releaseDate,
+        orderBy,
+        sortOrder,
+      }: Query,
       { prisma }: Context
     ) => {
       return await prisma.movie.findMany({
         take,
         skip,
+        where: {
+          title: {
+            contains,
+          },
+          description: {
+            contains,
+          },
+          releaseDate,
+        },
+        orderBy: {
+          [orderBy]: sortOrder,
+        },
       });
     },
   },
@@ -41,7 +87,7 @@ const resolvers = {
     register: async (
       _,
       data: {
-        userName: string;
+        name: string;
         email: string;
         password: string;
       },
@@ -65,35 +111,58 @@ const resolvers = {
       });
 
       if (!user) {
-        throw new Error(`email or password not matching`);
+        throw new UserInputError('Invalid email or password', {
+          errorCode: 'INVALID_CREDENTIALS',
+        });
       }
       const passwordMatches = await compareHash(password, user.password);
 
       if (!passwordMatches) {
-        throw new Error(`email or password not matching`);
+        throw new UserInputError('Invalid email or password', {
+          errorCode: 'INVALID_CREDENTIALS',
+        });
       }
-      return user;
+      return {
+        accessToken: createAccessToken(user.id),
+      };
     },
+
     changePassword: async (
       _,
-      { oldPassword, password }: { oldPassword: string; password: string },
-      { prisma }: Context
+      {
+        oldPassword,
+        newPassword,
+      }: { oldPassword: string; newPassword: string },
+      { prisma, userId }: Context
     ) => {
       const user = await prisma.user.findUnique({
         where: {
-          email: '',
+          id: userId,
         },
       });
 
       if (!user) {
-        throw new Error(`email or password not matching`);
+        throw new GraphQLError(
+          'You are not authorized to perform this action.',
+          {
+            extensions: {
+              code: 'FORBIDDEN',
+            },
+          }
+        );
       }
       const passwordMatches = await compareHash(oldPassword, user.password);
 
       if (!passwordMatches) {
-        throw new Error(`password not matching`);
+        throw new Error(`Old password not matching`);
       }
-      user.password = await hashData(password);
+
+      if (oldPassword === newPassword) {
+        throw new Error(`old password and new password are same`);
+      }
+
+      user.password = await hashData(newPassword);
+
       return await prisma.user.update({
         data: user,
         where: {
@@ -101,16 +170,27 @@ const resolvers = {
         },
       });
     },
+
     createMovie: async (
       _,
       data: {
-        movieName: string;
+        title: string;
         description: string;
         directorName: string;
-        releaseDate: string;
+        releaseDate: Date;
       },
-      { prisma }: Context
+      { prisma, userId }: Context
     ) => {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+      if (!user) {
+        throw new GraphQLError('Invalid Access Token', {
+          extensions: {
+            code: 'FORBIDDEN',
+          },
+        });
+      }
       return await prisma.movie.create({
         data,
       });
@@ -123,13 +203,24 @@ const resolvers = {
         ...data
       }: {
         id: number;
-        movieName: string;
+        title: string;
         description: string;
         directorName: string;
-        releaseDate: string;
+        releaseDate: Date;
       },
-      { prisma }: Context
+      { prisma, userId }: Context
     ) => {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+      if (!user) {
+        throw new GraphQLError('Invalid Access Token', {
+          extensions: {
+            code: 'FORBIDDEN',
+          },
+        });
+      }
+
       return await prisma.movie.update({
         where: {
           id,
@@ -138,7 +229,18 @@ const resolvers = {
       });
     },
 
-    deleteMovie: async (_, args: Id, { prisma }: Context) => {
+    deleteMovie: async (_, args: Id, { prisma, userId }: Context) => {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+      if (!user) {
+        throw new GraphQLError('Invalid Access Token', {
+          extensions: {
+            code: 'FORBIDDEN',
+          },
+        });
+      }
+
       await prisma.movie.delete({ where: { id: args.id } });
       return true;
     },

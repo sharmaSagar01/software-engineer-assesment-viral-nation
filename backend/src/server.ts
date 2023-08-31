@@ -2,7 +2,6 @@ import {
   constraintDirective,
   constraintDirectiveTypeDefs,
 } from 'graphql-constraint-directive';
-
 import { ApolloError, ApolloServer } from 'apollo-server';
 import resolvers from './utils/resolver';
 import createContext from './utils/context';
@@ -30,7 +29,7 @@ const server = new ApolloServer({
     throw error;
   },
 
-  context: createContext(),
+  context: createContext,
 });
 
 server.listen({ port: 4000 }).then(({ url }) => console.log({ url }));
