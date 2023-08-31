@@ -6,6 +6,7 @@ type User {
   email: String!
   createdAt: DateTime!
   updatedAt: DateTime!
+  movies: [Movie!]
 }
 
 type Movie {
@@ -14,11 +15,15 @@ type Movie {
   description: String
   directorName: String!
   releaseDate: DateTime!
+  user: User!
 }
 
 type Query {
   profile: User
-
+  users(
+    limit: Int = 10 @constraint(min: 1, max: 100)
+    offset: Int = 0 @constraint(min: 1)
+  ): [User!]!
   movie(id: Int!): Movie
   movies(
     limit: Int = 10 @constraint(min: 1, max: 100)
@@ -29,6 +34,7 @@ type Query {
     sortOrder: SortOrder = asc
   ): [Movie!]!
 }
+
 type Mutation {
   register(
     name: String!

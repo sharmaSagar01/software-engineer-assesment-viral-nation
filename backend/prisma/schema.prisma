@@ -9,19 +9,22 @@ datasource db {
 
 model User {
   id        Int      @id @default(autoincrement())
-  name  String
+  name      String
   email     String   @unique
   password  String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  movies    Movie[]
 }
 
 model Movie {
   id           Int      @id @default(autoincrement())
-  title    String
+  title        String
   description  String?
   directorName String
   releaseDate  DateTime
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
+  userId       Int
+  user         User  @relation(fields: [userId], references: [id])
 }

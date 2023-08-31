@@ -22,7 +22,7 @@ export const createAccessToken = (userId: number) => {
 
 export const verifyAccessToken = (token: string) => {
   try {
-    token = token.replace('Bearer', '');
+    token = token.replace('Bearer ', '');
     const payload = jwt.verify(token, ACCESS_TOKEN_SECRET);
     return payload.userId;
   } catch (err) {

@@ -1,12 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { verifyAccessToken } from './utils';
+import { Context } from '../types/Context';
 
 const prisma = new PrismaClient();
-
-export interface Context {
-  prisma: PrismaClient;
-  userId?: number;
-}
 
 const createContext = async ({ req }): Promise<Context> => {
   const token = req.headers.authorization || '';
