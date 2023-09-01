@@ -1,48 +1,90 @@
+scalar DateTime
+
 type User {
   id: Int!
-  userName: String!
+  name: String!
   email: String!
-  password: String!
   createdAt: DateTime!
   updatedAt: DateTime!
+  movies: [Movie!]
 }
 
 type Movie {
   id: Int!
-  movieName: String!
+  title: String!
   description: String
   directorName: String!
-  releaseDate: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  releaseDate: DateTime!
+  user: User!
 }
 
 type Query {
-  getUserById(id: Int!): User
-  getMovieById(id: Int): Movie
-  getMovies(limit: Int = 10, offset: Int = 0): [Movie!]!
+  profile: User
+  users(
+    limit: Int = 10 @constraint(min: 1, max: 100)
+    offset: Int = 0 @constraint(min: 1)
+  ): [User!]!
+  movie(id: Int!): Movie
+  movies(
+    limit: Int = 10 @constraint(min: 1, max: 100)
+    offset: Int = 0 @constraint(min: 1)
+    contains: String
+    releaseDate: DateRange
+    orderBy: OrderBy = id
+    sortOrder: SortOrder = asc
+  ): [Movie!]!
 }
+
 type Mutation {
-  createUser(userName: String!, email: String!, password: String!): User
+  register(
+    name: String!
+    email: String! @constraint(format: "email")
+    password: String! @constraint(minLength: 8)
+  ): User
 
-  loginUser(email: String!, password: String!): User
+  login(email: String!, password: String!): Login
 
-  logoutUser: Boolean
+  changePassword(
+    oldPassword: String!
+    newPassword: String! @constraint(minLength: 8)
+  ): User
 
   createMovie(
-    movieName: String!
+    title: String!
     description: String
     directorName: String!
-    releaseDate: String!
+    releaseDate: DateTime!
   ): Movie
 
   updateMovie(
     id: Int!
-    movieName: String
+    title: String
     description: String
     directorName: String
-    releaseDate: String
+    releaseDate: DateTime
   ): Movie
 
   deleteMovie(id: Int!): Boolean
+}
+
+type Login {
+  accessToken: String!
+}
+
+input DateRange {
+  gte: DateTime
+  lte: DateTime
+}
+
+enum SortOrder {
+  asc
+  desc
+}
+
+enum OrderBy {
+  id
+  directorName
+  title
+  description
+  releaseDate
 }
