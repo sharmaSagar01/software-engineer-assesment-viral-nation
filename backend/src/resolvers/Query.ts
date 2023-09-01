@@ -38,49 +38,6 @@ export const Query = {
     });
   },
 
-  // Retrieve all the movies filter, order, sort, pagination
-
-  // movies: async (
-  //   _,
-  //   {
-  //     limit: take,
-  //     offset: skip,
-  //     contains,
-  //     releaseDate,
-  //     orderBy,
-  //     sortOrder,
-  //   }: IQuery,
-  //   { prisma }: Context
-  // ) => {
-  //   const where: any = {};
-
-  //   if (contains) {
-  //     where.OR = [
-  //       {
-  //         title: {
-  //           contains,
-  //           mode: 'insensitive',
-  //         },
-  //         description: {
-  //           contains,
-  //           mode: 'insensitive',
-  //         },
-  //       },
-  //     ];
-  //   }
-  //   if (releaseDate) {
-  //     where.releaseDate = releaseDate;
-  //   }
-
-  //   return await prisma.movie.findMany({
-  //     take,
-  //     skip,
-  //     where,
-  //     orderBy: {
-  //       [orderBy]: sortOrder,
-  //     },
-  //   });
-  // },
   movies: async (
     _,
     {
@@ -97,13 +54,23 @@ export const Query = {
       take,
       skip,
       where: {
-        title: {
-          contains,
-        },
-        description: {
-          contains,
-        },
-        releaseDate,
+        OR: [
+          {
+            title: {
+              contains: contains,
+              mode: 'insensitive',
+            },
+          },
+          {
+            description: {
+              contains: contains,
+              mode: 'insensitive',
+            },
+          },
+          {
+            releaseDate,
+          },
+        ],
       },
       orderBy: {
         [orderBy]: sortOrder,
